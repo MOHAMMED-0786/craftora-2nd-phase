@@ -36,7 +36,7 @@ export default function Checkout() {
     try {
       setLoading(true);
       const items = await blink.db.cart.list({
-        where: { user_id: user.id }
+        where: { userId: user.id }
       });
       
       if (items.length === 0) {
@@ -89,36 +89,36 @@ export default function Checkout() {
         const orderNumber = `CRFT-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
 
         const order = await blink.db.orders.create({
-          user_id: user?.id || '',
-          order_number: orderNumber,
-          seller_id: sellerId,
-          buyer_name: user?.profile?.displayName || user?.displayName || 'Customer',
-          buyer_phone: phone,
-          delivery_address: address,
-          total_amount: orderTotal,
+          userId: user?.id || '',
+          orderNumber: orderNumber,
+          sellerId: sellerId,
+          buyerName: user?.profile?.displayName || user?.displayName || 'Customer',
+          buyerPhone: phone,
+          deliveryAddress: address,
+          totalAmount: orderTotal,
           status: 'pending',
-          payment_method: paymentMethod,
-          payment_status: paymentMethod === 'online' ? 'paid' : 'pending',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          paymentMethod: paymentMethod,
+          paymentStatus: paymentMethod === 'online' ? 'paid' : 'pending',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
         });
 
         // Create order items
         await blink.db.orderItems.createMany(items.map(item => ({
-          user_id: user?.id || '',
-          order_id: order.id,
-          product_id: item.productId,
-          product_title: item.product?.title || '',
-          product_price: item.product?.price || 0,
+          userId: user?.id || '',
+          orderId: order.id,
+          productId: item.productId,
+          productTitle: item.product?.title || '',
+          productPrice: item.product?.price || 0,
           quantity: item.quantity,
           subtotal: (item.product?.price || 0) * item.quantity,
-          created_at: new Date().toISOString()
+          createdAt: new Date().toISOString()
         })));
       }
 
       // Clear cart
       await blink.db.cart.deleteMany({
-        where: { user_id: user?.id }
+        where: { userId: user?.id }
       });
 
       toast.success('Order placed successfully!');

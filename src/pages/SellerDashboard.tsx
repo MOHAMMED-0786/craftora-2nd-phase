@@ -37,7 +37,7 @@ export default function SellerDashboard() {
       
       // Load seller profile
       const sellers = await blink.db.sellers.list({
-        where: { user_id: user.id }
+        where: { userId: user.id }
       });
       
       if (sellers.length === 0) {
@@ -51,14 +51,14 @@ export default function SellerDashboard() {
 
       // Load products
       const productsData = await blink.db.products.list({
-        where: { seller_id: sellerData.id },
+        where: { sellerId: sellerData.id },
         orderBy: { createdAt: 'desc' }
       });
       setProducts(productsData as Product[]);
 
       // Load orders
       const ordersData = await blink.db.orders.list({
-        where: { seller_id: sellerData.id },
+        where: { sellerId: sellerData.id },
         orderBy: { createdAt: 'desc' },
         limit: 10
       });
@@ -66,7 +66,7 @@ export default function SellerDashboard() {
       const ordersWithItems = await Promise.all(
         ordersData.map(async (order) => {
           const items = await blink.db.orderItems.list({
-            where: { order_id: order.id }
+            where: { orderId: order.id }
           });
           return { ...order, items: items as any };
         })
@@ -85,7 +85,7 @@ export default function SellerDashboard() {
     try {
       await blink.db.orders.update(orderId, {
         status: newStatus,
-        updated_at: new Date().toISOString()
+        updatedAt: new Date().toISOString()
       });
       setOrders(prev => prev.map(order => 
         order.id === orderId ? { ...order, status: newStatus } : order
@@ -101,8 +101,8 @@ export default function SellerDashboard() {
     try {
       const newStatus = currentStatus === '1' ? '0' : '1';
       await blink.db.products.update(productId, {
-        is_available: newStatus,
-        updated_at: new Date().toISOString()
+        isAvailable: newStatus,
+        updatedAt: new Date().toISOString()
       });
       setProducts(prev => prev.map(product => 
         product.id === productId ? { ...product, isAvailable: newStatus } : product

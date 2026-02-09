@@ -38,7 +38,7 @@ export default function ReviewPage() {
       }
       
       const items = await blink.db.orderItems.list({
-        where: { order_id: orderId }
+        where: { orderId: orderId }
       });
       
       setOrder({ ...result, items: items as any } as OrderWithItems);
@@ -80,13 +80,13 @@ export default function ReviewPage() {
       for (const item of (order.items || [])) {
         const review = reviews[item.productId];
         await blink.db.reviews.create({
-          user_id: user.id,
-          order_id: order.id,
-          product_id: item.productId,
-          seller_id: order.sellerId,
+          userId: user.id,
+          orderId: order.id,
+          productId: item.productId,
+          sellerId: order.sellerId,
           rating: review.rating,
           comment: review.comment,
-          created_at: new Date().toISOString()
+          createdAt: new Date().toISOString()
         });
 
         // Update product rating (simplified)
@@ -95,8 +95,8 @@ export default function ReviewPage() {
           const newTotalReviews = product.totalReviews + 1;
           const newRatingAverage = (product.ratingAverage * product.totalReviews + review.rating) / newTotalReviews;
           await blink.db.products.update(item.productId, {
-            rating_average: newRatingAverage,
-            total_reviews: newTotalReviews
+            ratingAverage: newRatingAverage,
+            totalReviews: newTotalReviews
           });
         }
       }
@@ -107,7 +107,7 @@ export default function ReviewPage() {
         const newTotalReviews = seller.totalReviews + (order.items?.length || 0);
         // This is a simplified calculation, ideally you'd aggregate all reviews
         await blink.db.sellers.update(order.sellerId, {
-          total_reviews: newTotalReviews
+          totalReviews: newTotalReviews
         });
       }
 

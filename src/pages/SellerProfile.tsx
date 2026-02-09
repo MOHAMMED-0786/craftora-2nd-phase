@@ -36,7 +36,7 @@ export default function SellerProfile() {
 
       // Fetch user info for the seller
       const userResult = await blink.db.users.list({
-        where: { user_id: sellerData.userId }
+        where: { userId: sellerData.userId }
       });
       if (userResult.length > 0) {
         setSellerUser(userResult[0] as unknown as User);
@@ -44,7 +44,7 @@ export default function SellerProfile() {
 
       // Load seller's products
       const productsData = await blink.db.products.list({
-        where: { seller_id: id, isAvailable: '1' }
+        where: { sellerId: id, isAvailable: '1' }
       });
       setProducts(productsData as Product[]);
     } catch (error) {

@@ -28,7 +28,7 @@ export default function Cart() {
     try {
       setLoading(true);
       const items = await blink.db.cart.list({
-        where: { user_id: user.id },
+        where: { userId: user.id },
         orderBy: { createdAt: 'desc' }
       });
       
@@ -53,7 +53,7 @@ export default function Cart() {
     try {
       await blink.db.cart.update(id, {
         quantity: newQuantity,
-        updated_at: new Date().toISOString()
+        updatedAt: new Date().toISOString()
       });
       setCartItems(items => items.map(item => 
         item.id === id ? { ...item, quantity: newQuantity } : item

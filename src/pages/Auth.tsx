@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '@/components/ui/Button';
 import Logo from '@/components/ui/Logo';
@@ -9,65 +9,77 @@ import { UserRole } from '@/types';
 export default function Auth() {
   const navigate = useNavigate();
   const { user, isAuthenticated, isLoading, login } = useAuth();
+  const [creatingProfile, setCreatingProfile] = useState(false);
   const selectedRole = (localStorage.getItem('selectedRole') as UserRole) || 'buyer';
 
   useEffect(() => {
-    if (!isLoading && isAuthenticated && user) {
+    if (isLoading || creatingProfile) return;
+    if (isAuthenticated && user) {
       handleProfileCheck();
     }
-  }, [isAuthenticated, isLoading, user, navigate]);
+  }, [isAuthenticated, isLoading, user]);
 
   const handleProfileCheck = async () => {
-    if (!user) return;
+    if (!user || creatingProfile) return;
 
-    // If profile already exists, go home
+    // User already has a profile — go to home
     if (user.profile) {
-      navigate('/home');
+      navigate('/home', { replace: true });
       return;
     }
 
-    // Otherwise, create profile
+    // First-time user — create profile
+    setCreatingProfile(true);
     try {
       await blink.db.users.create({
-        user_id: user.id,
+        userId: user.id,
         email: user.email,
-        display_name: user.displayName || user.email.split('@')[0],
+        displayName: user.displayName || user.email.split('@')[0],
         role: selectedRole,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        lastSignIn: new Date().toISOString()
       });
 
       // If seller, also create seller entry
       if (selectedRole === 'seller') {
         await blink.db.sellers.create({
-          user_id: user.id,
-          verification_status: 'pending',
-          rating_average: 0,
-          total_reviews: 0,
-          total_orders: 0,
-          total_earnings: 0,
-          is_active: '1',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          userId: user.id,
+          verificationStatus: 'pending',
+          ratingAverage: 0,
+          totalReviews: 0,
+          totalOrders: 0,
+          totalEarnings: 0,
+          isActive: '1',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
         });
       }
 
-      navigate('/home');
+      navigate('/home', { replace: true });
     } catch (error) {
       console.error('Error creating profile:', error);
-      // Maybe stay on auth page or show error
+      // Profile might already exist from a previous attempt — try going home
+      navigate('/home', { replace: true });
+    } finally {
+      setCreatingProfile(false);
     }
   };
 
   const handleLogin = () => {
-    login();
+    login('/auth');
   };
 
-  if (isLoading) {
+  if (isLoading || creatingProfile) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-pulse">
-          <Logo size="lg" />
+        <div className="text-center space-y-4">
+          <div className="animate-pulse">
+            <Logo size="lg" />
+          </div>
+          <p className="text-muted-foreground text-sm">
+            {creatingProfile ? 'Setting up your profile...' : 'Checking authentication...'}
+          </p>
         </div>
       </div>
     );
@@ -160,7 +172,7 @@ export default function Auth() {
 
             {/* Footer */}
             <div className="text-center text-xs text-muted-foreground pt-4">
-              By continuing, you agree to Craftora's Terms of Service and Privacy Policy
+              By continuing, you agree to Craftora&apos;s Terms of Service and Privacy Policy
             </div>
           </div>
         </div>

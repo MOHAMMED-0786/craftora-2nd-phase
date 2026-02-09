@@ -85,7 +85,7 @@ export default function AddProduct() {
 
       // Get seller record
       const sellers = await blink.db.sellers.list({
-        where: { user_id: user.id }
+        where: { userId: user.id }
       });
       
       if (sellers.length === 0) {
@@ -94,21 +94,21 @@ export default function AddProduct() {
       }
 
       await blink.db.products.create({
-        user_id: user.id,
-        seller_id: sellers[0].id,
+        userId: user.id,
+        sellerId: sellers[0].id,
         title: formData.title,
         description: formData.description,
-        category_id: formData.categoryId,
+        categoryId: formData.categoryId,
         price: parseFloat(formData.price),
-        stock_quantity: parseInt(formData.stockQuantity),
+        stockQuantity: parseInt(formData.stockQuantity),
         ingredients: formData.ingredients,
-        handmade_process: formData.handmadeProcess,
+        handmadeProcess: formData.handmadeProcess,
         images: JSON.stringify(imageUrls),
-        is_available: '1',
-        rating_average: 0,
-        total_reviews: 0,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        isAvailable: '1',
+        ratingAverage: 0,
+        totalReviews: 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       });
 
       toast.success('Product added successfully!');

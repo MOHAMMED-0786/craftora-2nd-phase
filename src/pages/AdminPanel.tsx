@@ -39,7 +39,7 @@ export default function AdminPanel() {
       const sellersWithUsers = await Promise.all(
         sellersList.map(async (seller) => {
           const sellerUser = await blink.db.users.list({
-            where: { user_id: seller.userId }
+            where: { userId: seller.userId }
           });
           return { ...seller, user: sellerUser[0] };
         })
@@ -58,8 +58,8 @@ export default function AdminPanel() {
   const approveSeller = async (id: string) => {
     try {
       await blink.db.sellers.update(id, {
-        verification_status: 'approved',
-        updated_at: new Date().toISOString()
+        verificationStatus: 'approved',
+        updatedAt: new Date().toISOString()
       });
       setSellers(prev => prev.map(s => s.id === id ? { ...s, verificationStatus: 'approved' } : s));
       toast.success('Seller approved');
@@ -72,8 +72,8 @@ export default function AdminPanel() {
   const rejectSeller = async (id: string) => {
     try {
       await blink.db.sellers.update(id, {
-        verification_status: 'rejected',
-        updated_at: new Date().toISOString()
+        verificationStatus: 'rejected',
+        updatedAt: new Date().toISOString()
       });
       setSellers(prev => prev.map(s => s.id === id ? { ...s, verificationStatus: 'rejected' } : s));
       toast.success('Seller rejected');
@@ -152,7 +152,7 @@ export default function AdminPanel() {
                       </div>
                       <div>
                         <h3 className="font-bold text-lg">{seller.businessName || 'Unnamed Business'}</h3>
-                        <p className="text-sm text-muted-foreground">Owner: {seller.user?.display_name} ({seller.user?.email})</p>
+                        <p className="text-sm text-muted-foreground">Owner: {seller.user?.displayName} ({seller.user?.email})</p>
                         <Badge variant={seller.verificationStatus === 'approved' ? 'success' : seller.verificationStatus === 'rejected' ? 'error' : 'default'}>
                           {seller.verificationStatus}
                         </Badge>

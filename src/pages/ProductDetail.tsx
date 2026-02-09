@@ -63,28 +63,34 @@ export default function ProductDetail() {
 
     try {
       setAddingToCart(true);
-      const { user } = await blink.auth.me();
+      const me = await blink.auth.me();
+      const userId = me?.id;
+      if (!userId) {
+        toast.error('Please login first');
+        navigate('/auth');
+        return;
+      }
       
       // Check if item already in cart
       const existing = await blink.db.cart.list({
         where: { 
-          user_id: user.id,
-          product_id: product.id
+          userId: userId,
+          productId: product.id
         }
       });
 
       if (existing.length > 0) {
         await blink.db.cart.update(existing[0].id, {
           quantity: existing[0].quantity + quantity,
-          updated_at: new Date().toISOString()
+          updatedAt: new Date().toISOString()
         });
       } else {
         await blink.db.cart.create({
-          user_id: user.id,
-          product_id: product.id,
+          userId: userId,
+          productId: product.id,
           quantity: quantity,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
         });
       }
 

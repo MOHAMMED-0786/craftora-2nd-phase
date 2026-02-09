@@ -129,14 +129,14 @@ export default function EditProduct() {
       await blink.db.products.update(id, {
         title: formData.title,
         description: formData.description,
-        category_id: formData.categoryId,
+        categoryId: formData.categoryId,
         price: parseFloat(formData.price),
-        stock_quantity: parseInt(formData.stockQuantity),
+        stockQuantity: parseInt(formData.stockQuantity),
         ingredients: formData.ingredients,
-        handmade_process: formData.handmadeProcess,
+        handmadeProcess: formData.handmadeProcess,
         images: JSON.stringify(finalImages),
-        is_available: formData.isAvailable,
-        updated_at: new Date().toISOString()
+        isAvailable: formData.isAvailable,
+        updatedAt: new Date().toISOString()
       });
 
       toast.success('Product updated successfully!');

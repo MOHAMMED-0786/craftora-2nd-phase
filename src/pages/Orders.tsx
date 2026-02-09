@@ -29,14 +29,14 @@ export default function Orders() {
     try {
       setLoading(true);
       const result = await blink.db.orders.list({
-        where: { user_id: user.id },
+        where: { userId: user.id },
         orderBy: { createdAt: 'desc' }
       });
       
       const ordersWithData = await Promise.all(
         result.map(async (order) => {
           const items = await blink.db.orderItems.list({
-            where: { order_id: order.id }
+            where: { orderId: order.id }
           });
           const seller = await blink.db.sellers.list({
             where: { id: order.sellerId }

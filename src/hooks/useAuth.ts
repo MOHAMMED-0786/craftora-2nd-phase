@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { blink } from '@/lib/blink';
 import { User } from '@/types';
 
@@ -16,13 +16,17 @@ export function useAuth() {
 
   useEffect(() => {
     const unsubscribe = blink.auth.onAuthStateChanged(async (state) => {
-      if (state.user) {
-        // Fetch profile from DB
+      if (state.isLoading) {
+        setIsLoading(true);
+        return;
+      }
+
+      if (state.user && state.isAuthenticated) {
         try {
           const profiles = await blink.db.users.list({
-            where: { user_id: state.user.id }
+            where: { userId: state.user.id }
           });
-          
+
           const profile = profiles.length > 0 ? (profiles[0] as unknown as User) : undefined;
 
           setUser({
@@ -31,6 +35,7 @@ export function useAuth() {
             displayName: state.user.displayName,
             profile
           });
+          setIsAuthenticated(true);
         } catch (error) {
           console.error('Error fetching user profile:', error);
           setUser({
@@ -38,26 +43,35 @@ export function useAuth() {
             email: state.user.email || '',
             displayName: state.user.displayName,
           });
+          setIsAuthenticated(true);
         }
       } else {
         setUser(null);
+        setIsAuthenticated(false);
       }
-      
-      setIsLoading(state.isLoading);
-      setIsAuthenticated(state.isAuthenticated);
+
+      setIsLoading(false);
     });
 
     return unsubscribe;
   }, []);
 
-  const login = () => {
-    blink.auth.login(window.location.href);
-  };
+  const login = useCallback((redirectPath?: string) => {
+    const origin = window.location.origin;
+    const redirectUrl = redirectPath ? `${origin}${redirectPath}` : `${origin}/auth`;
+    blink.auth.login(redirectUrl);
+  }, []);
 
-  const logout = async () => {
-    await blink.auth.signOut();
+  const logout = useCallback(async () => {
+    try {
+      await blink.auth.signOut();
+    } catch (e) {
+      console.error('Logout error:', e);
+    }
+    setUser(null);
+    setIsAuthenticated(false);
     window.location.href = '/';
-  };
+  }, []);
 
   return {
     user,
